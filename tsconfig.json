@@ -1,14 +1,18 @@
 {
-  "exclude": ["node_modules"],
   "compilerOptions": {
-    "module": "ESNext",
-    "moduleResolution": "Node",
+    "target": "es5",
+    "module": "commonjs",
+    "lib": ["es6"],
+    "allowJs": true,
+    "checkJs": true,
     "sourceMap": true,
     "outDir": "public",
+    "rootDir": "api",
     "strict": true,
-    "target": "ES6",
-    "lib": ["ES2020", "ES2015.Promise"],
+    "noImplicitAny": true,
     "esModuleInterop": true,
-    "types": ["node"]
+    "resolveJsonModule": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true
   }
 }

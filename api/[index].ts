@@ -1,30 +1,61 @@
-import { Telegraf } from "telegraf";
+import dotenv from "dotenv";
+import { setupBot } from "./bot";
 
-const token = process.env.BOT_TOKEN
+if (process.env.VERCEL === undefined) dotenv.config();
+
+const token = process.env.BOT_TOKEN;
 if (token === undefined) {
   throw new Error("BOT_TOKEN must be provided!");
 }
 
-const bot = new Telegraf(token);
-// Set the bot response
-bot.on("text", (ctx: any) => ctx.replyWithHTML("<b>Hellowww</b>"));
+const bot = setupBot(token);
 
-const secretPath = `/api/${bot.secretPathComponent()}`;
+// const secretPath = `/api/${bot.secretPathComponent()}`;
+const secretPath = `/api/not-so-secret-anymore-testing-path`;
 
-bot.telegram.sendMessage(41487359, `Test message: My token is ${token}. Listening in the secret path ${secretPath}`)
+const setWebhook = () =>
+  bot.telegram.setWebhook(
+    `https://random-phrase-bot-kasama.vercel.app${secretPath}`
+  );
 
-// Set telegram webhook
-// npm install -g localtunnel && lt --port 3000
-bot.telegram
-  .setWebhook(`https://random-phrase-bot-kasama.vercel.app${secretPath}`)
-  .then((e: any) => console.log(`Webhook was setup: ${JSON.stringify(e)}`))
-  .catch((e: any) => console.log(`Error setting webhook: ${JSON.stringify(e)}`));
+console.log("Env vars:", process.env);
+if (process.env.ENVIRONMENT === "local") {
+  console.log("Running bot in LOCAL env");
+  bot.launch();
 
-// Set the bot API endpoint
-// module.exports = bot.webhookCallback(secretPath)
-console.log(`Setting up everything. Path is ${secretPath}`);
+  bot.telegram.deleteWebhook();
 
-export default (req: any, res: any) => {
+  process.once("SIGINT", () => setWebhook().then(() => bot.stop("SIGINT")));
+  process.once("SIGTERM", () => setWebhook().then(() => bot.stop("SIGTERM")));
+} else {
+  bot.telegram
+    .sendMessage(
+      41487359,
+      `Test message: My token is ${token}. Listening in the secret path ${secretPath}\nRunning from ${process.env.ENVIRONMENT}`
+    )
+    .then(() => {
+      console.log("Was able to send message");
+      return "Was able to send message";
+    })
+    .catch((e) => {
+      console.log("Wasnt able to send message", e);
+      return `Wasnt able to send message ${JSON.stringify(e)}`;
+    });
+
+  // Set telegram webhook
+  // npm install -g localtunnel && lt --port 3000
+  setWebhook()
+    .then((e: any) => console.log(`Webhook was setup: ${JSON.stringify(e)}`))
+    .catch((e: any) =>
+      console.log(`Error setting webhook: ${JSON.stringify(e)}`)
+    );
+
+  // Set the bot API endpoint
+  // module.exports = bot.webhookCallback(secretPath)
+  console.log(`Setting up everything. Path is ${secretPath}`);
+}
+
+export default async (req: any, res: any) => {
   console.log("Stuff:", {
     method: req.method,
     url: req.url,
@@ -41,5 +72,5 @@ export default (req: any, res: any) => {
     req.url = `${secretPath}`;
   }
 
-  bot.webhookCallback(secretPath)(req, res);
+  return bot.webhookCallback(secretPath)(req, res);
 };

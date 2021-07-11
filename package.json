@@ -5,11 +5,20 @@
   "license": "MIT",
   "scripts": {
     "build": "mkdir -p public && cp -r api/* public/.",
-    "build-ts": "tsc"
+    "build-ts": "tsc",
+    "dev": "ENVIRONMENT=dev nodemon"
   },
   "dependencies": {
+    "@prisma/client": "^2.26.0",
+    "dotenv": "^10.0.0",
     "express": "^4.17.1",
+    "prisma": "2.26.0",
     "telegraf": "^4.4.0",
-    "ts-node": "^10.0.0"
+    "ts-node": "^10.1.0"
+  },
+  "devDependencies": {
+    "@types/node": "^16.3.1",
+    "nodemon": "^2.0.12",
+    "typescript": "^4.3.5"
   }
 }
